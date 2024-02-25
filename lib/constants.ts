@@ -16,3 +16,26 @@ export const NAV_THEME = {
     text: 'hsl(0 0% 98%)', // foreground
   },
 };
+
+export const categoryEmojies: { [key: string]: string } = {
+  Groceries: '🛒',
+  Rent: '🏠',
+  Salary: '💰',
+  Freelancing: '👨🏻‍💻',
+  Utilities: '💡',
+  Electronics: '🖥️',
+  'Dining Out': '🍽️',
+  'Breakfast Supplies': '🥐',
+  'Household Items': '🏡',
+  'Christmas Gifts': '🎁',
+  'New Year Party Supplies': '🎉',
+  'Thanksgiving Groceries': '🦃',
+  Bonus: '🎊',
+  'Consulting Work': '💼',
+  'Part-Time Job': '⌚',
+  'Online Sales': '🛒',
+  'Freelance Writing': '✍️',
+  'End of Year Bonus': '🍾',
+  'Thanksgiving Freelance': '🍂',
+  Default: '🫰🏼',
+};
