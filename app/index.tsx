@@ -1,5 +1,5 @@
-import { Stack, Link } from 'expo-router';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Stack } from 'expo-router';
+import { Text, View } from 'react-native';
 
 export default function Page() {
   return (
@@ -10,11 +10,6 @@ export default function Page() {
           <Text className={styles.title}>Hello World</Text>
           <Text className={styles.subtitle}>This is the first page of your app.</Text>
         </View>
-        <Link href={{ pathname: '/details', params: { name: 'Dan' } }} asChild>
-          <TouchableOpacity className={styles.button}>
-            <Text className={styles.buttonText}>Show Details</Text>
-          </TouchableOpacity>
-        </Link>
       </View>
     </View>
   );
