@@ -1,7 +1,28 @@
 import { Stack } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite/next';
+import React from 'react';
 import { Text, View } from 'react-native';
 
+import { getCategories, getOrderedTransactions } from '../lib/db';
+import { Category, Transaction } from '../lib/types';
+
 export default function Page() {
+  const [categories, setCategories] = React.useState<Category[]>([]);
+  const [transactions, setTransactions] = React.useState<Transaction[]>([]);
+
+  const db = useSQLiteContext();
+
+  React.useEffect(() => {
+    db.withTransactionAsync(async () => {
+      await getData();
+    });
+  }, [db]);
+
+  async function getData() {
+    setCategories(await getCategories(db));
+    setTransactions(await getOrderedTransactions(db));
+  }
+
   return (
     <View className={styles.container}>
       <Stack.Screen options={{ title: 'Overview' }} />

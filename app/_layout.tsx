@@ -1,13 +1,13 @@
 import '../global.css';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme, ThemeProvider } from '@react-navigation/native';
-import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system';
 import { SplashScreen, Stack } from 'expo-router';
 import * as SQLite from 'expo-sqlite/next';
 import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
+
+import { loadDatabase } from '../lib/db';
 
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
@@ -23,21 +23,6 @@ const DARK_THEME: Theme = {
 
 // Prevent the splash screen from auto-hiding before getting the color scheme.
 SplashScreen.preventAutoHideAsync();
-
-const loadDatabase = async () => {
-  const dbName = 'mySQLiteDB.db';
-  const dbAsset = require('../assets/mySQLiteDB.db');
-  const dbUri = Asset.fromModule(dbAsset).uri;
-  const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
-
-  const fileInfo = await FileSystem.getInfoAsync(dbFilePath);
-  if (!fileInfo.exists) {
-    await FileSystem.makeDirectoryAsync(`${FileSystem.documentDirectory}SQLite`, {
-      intermediates: true,
-    });
-    await FileSystem.downloadAsync(dbUri, dbFilePath);
-  }
-};
 
 export default function Layout() {
   const { colorScheme, setColorScheme, isDarkColorScheme } = useColorScheme();
