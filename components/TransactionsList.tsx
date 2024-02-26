@@ -1,5 +1,5 @@
 import { FlashList } from '@shopify/flash-list';
-import { TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 
 import TransactionListItem from './TransactionListItem';
 import { Category, Transaction } from '../lib/types';
@@ -8,17 +8,18 @@ export default function TransactionsList({
   transactions,
   categories,
   deleteTransaction,
+  ListHeaderComponent,
 }: {
   transactions: Transaction[];
   categories: Category[];
   deleteTransaction: (id: number) => Promise<void>;
+  ListHeaderComponent: React.ReactElement;
 }) {
   return (
     <FlashList
-      className="bg-slate-50"
+      ListHeaderComponent={ListHeaderComponent}
       contentContainerStyle={{
         paddingHorizontal: 16,
-        paddingTop: 20,
       }}
       data={transactions}
       renderItem={({ item: transaction }: { item: Transaction }) => {
