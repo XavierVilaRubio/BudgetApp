@@ -25,7 +25,7 @@ export default function Page() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="px-4 pt-6 flex-1">
+      <View className="px-4 pt-6 flex-1 bg-slate-50">
         <TransactionsList categories={categories} transactions={transactions} />
       </View>
     </SafeAreaView>

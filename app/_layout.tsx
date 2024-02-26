@@ -2,7 +2,7 @@ import '../global.css';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme, ThemeProvider } from '@react-navigation/native';
 import { SplashScreen, Stack } from 'expo-router';
-import * as SQLite from 'expo-sqlite/next';
+import { SQLiteProvider } from 'expo-sqlite/next';
 import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
@@ -69,10 +69,15 @@ export default function Layout() {
             <Text>Loading Database...</Text>
           </View>
         }>
-        <SQLite.SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
+        <SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
           <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-          <Stack />
-        </SQLite.SQLiteProvider>
+          <Stack>
+            <Stack.Screen
+              name="index"
+              options={{ headerTitle: 'Budget App', headerLargeTitle: true }}
+            />
+          </Stack>
+        </SQLiteProvider>
       </React.Suspense>
     </ThemeProvider>
   );
