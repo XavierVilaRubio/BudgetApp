@@ -1,13 +1,13 @@
 import '../global.css';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Theme, ThemeProvider } from '@react-navigation/native';
+import { Asset } from 'expo-asset';
+import * as FileSystem from 'expo-file-system';
 import { SplashScreen, Stack } from 'expo-router';
-import { SQLiteProvider } from 'expo-sqlite/next';
+import * as SQLite from 'expo-sqlite/next';
 import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
-
-import { loadDatabase } from '../lib/db';
 
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
@@ -19,6 +19,36 @@ const LIGHT_THEME: Theme = {
 const DARK_THEME: Theme = {
   dark: true,
   colors: NAV_THEME.dark,
+};
+
+const loadDatabase = async () => {
+  const dbName = 'mySQLiteDB.db';
+  const dbAsset = require('../assets/mySQLiteDB.db');
+  const dbUri = Asset.fromModule(dbAsset).uri;
+  const dbFilePath = `${FileSystem.documentDirectory}SQLite/${dbName}`;
+
+  const fileInfo = await FileSystem.getInfoAsync(dbFilePath);
+  if (!fileInfo.exists) {
+    await FileSystem.makeDirectoryAsync(FileSystem.documentDirectory + 'SQLite', {
+      intermediates: true,
+    });
+    await FileSystem.downloadAsync(dbUri, dbFilePath);
+  }
+  const db = await SQLite.openDatabaseAsync(dbName);
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS Categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('Expense', 'Income'))
+);`);
+  await db.execAsync(`CREATE TABLE IF NOT EXISTS Transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  category_id INTEGER,
+  amount REAL NOT NULL,
+  date INTEGER NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL CHECK (type IN ('Expense', 'Income')),
+  FOREIGN KEY (category_id) REFERENCES Categories (id)
+ );`);
 };
 
 // Prevent the splash screen from auto-hiding before getting the color scheme.
@@ -69,7 +99,7 @@ export default function Layout() {
             <Text>Loading Database...</Text>
           </View>
         }>
-        <SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
+        <SQLite.SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
           <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
           <Stack>
             <Stack.Screen
@@ -77,7 +107,7 @@ export default function Layout() {
               options={{ headerTitle: 'Budget App', headerLargeTitle: true }}
             />
           </Stack>
-        </SQLiteProvider>
+        </SQLite.SQLiteProvider>
       </React.Suspense>
     </ThemeProvider>
   );
