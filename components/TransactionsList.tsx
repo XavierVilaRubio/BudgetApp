@@ -7,9 +7,11 @@ import { Category, Transaction } from '../lib/types';
 export default function TransactionsList({
   transactions,
   categories,
+  deleteTransaction,
 }: {
   transactions: Transaction[];
   categories: Category[];
+  deleteTransaction: (id: number) => Promise<void>;
 }) {
   return (
     <FlashList
@@ -27,6 +29,7 @@ export default function TransactionsList({
           <TouchableOpacity
             className="mb-4"
             activeOpacity={0.7}
+            onLongPress={() => deleteTransaction(transaction.id)}>
             <TransactionListItem transaction={transaction} categoryInfo={currentItemCategory} />
           </TouchableOpacity>
         );
