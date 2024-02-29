@@ -13,8 +13,8 @@ export default function TransactionListItem({
   transaction,
   categoryInfo,
 }: TransactionListItemProps) {
-  const transactionSymbol = transaction.type === 'Expense' ? '+' : '-';
-  const color = transaction.type === 'Expense' ? 'text-green-500' : 'text-red-500';
+  const transactionSymbol = transaction.type === 'Expense' ? '-' : '+';
+  const color = transaction.type === 'Expense' ? 'text-red-500' : 'text-green-500';
   const emoji = categoryEmojies[categoryInfo?.name ?? 'Default'];
   return (
     <Card>
