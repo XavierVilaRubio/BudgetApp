@@ -1,8 +1,12 @@
+import { MaterialIcons } from '@expo/vector-icons';
+import BottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet';
 import { useSQLiteContext } from 'expo-sqlite/next';
-import React from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { SafeAreaView, Text, View } from 'react-native';
 
+import { BottomSheetCalendar } from '../components/NewTransactionBottomSheet';
 import TransactionsList from '../components/TransactionsList';
+import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Category, Transaction, TransactionsByMonth } from '../lib/types';
 
@@ -59,6 +63,38 @@ export default function Page() {
     });
   }
 
+  async function insertTransaction(transaction: Transaction) {
+    db.withTransactionAsync(async () => {
+      const res = await db.runAsync(
+        `
+        INSERT INTO Transactions (category_id, amount, date, description, type) VALUES (?, ?, ?, ?, ?);
+      `,
+        [
+          transaction.category_id,
+          transaction.amount,
+          transaction.date,
+          transaction.description,
+          transaction.type,
+        ]
+      );
+      console.log(res);
+      await getData();
+    });
+  }
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const handleSnapPress = useCallback((index: number) => {
+    console.log(bottomSheetRef);
+    bottomSheetRef.current?.snapToIndex(index);
+    setIsOpen(true);
+  }, []);
+
+  function onCloseBottomSheet() {
+    setIsOpen(false);
+    bottomSheetRef.current?.close();
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
       <TransactionsList
@@ -69,39 +105,57 @@ export default function Page() {
           <MonthSummaryCard
             totalExpenses={transactionsByMonth.totalExpenses}
             totalIncome={transactionsByMonth.totalIncome}
+            onPressNewEntry={() => handleSnapPress(0)}
           />
         }
+      />
+      <BottomSheetCalendar
+        ref={bottomSheetRef}
+        onClose={onCloseBottomSheet}
+        insertTransaction={insertTransaction}
       />
     </SafeAreaView>
   );
 }
 
-function MonthSummaryCard(transactionsByMonth: TransactionsByMonth) {
+function MonthSummaryCard({
+  totalIncome,
+  totalExpenses,
+  onPressNewEntry,
+}: {
+  totalIncome: TransactionsByMonth['totalIncome'];
+  totalExpenses: TransactionsByMonth['totalExpenses'];
+  onPressNewEntry: () => void;
+}) {
   const readablePeriod = new Date().toLocaleDateString('default', {
     month: 'long',
     year: 'numeric',
   });
-  const savings = transactionsByMonth.totalIncome - transactionsByMonth.totalExpenses;
+  const savings = totalIncome - totalExpenses;
   const color = savings > 0 ? 'text-green-500' : 'text-red-500';
 
   return (
-    <Card className="my-4">
-      <CardHeader className="pb-0">
-        <CardTitle>Summary for {readablePeriod}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Text className="text-lg">
-          Income:{' '}
-          <Text className="font-semibold text-green-500">${transactionsByMonth.totalIncome}</Text>
-        </Text>
-        <Text className="text-lg">
-          Total Expenses:{' '}
-          <Text className="font-semibold text-red-500">${transactionsByMonth.totalExpenses}</Text>
-        </Text>
-        <Text className="text-lg">
-          Savings: <Text className={`font-semibold ${color}`}>${savings}</Text>
-        </Text>
-      </CardContent>
-    </Card>
+    <View className="my-4 gap-4">
+      <Card>
+        <CardHeader className="pb-0">
+          <CardTitle>Summary for {readablePeriod}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Text className="text-lg">
+            Income: <Text className="font-semibold text-green-500">${totalIncome}</Text>
+          </Text>
+          <Text className="text-lg">
+            Total Expenses: <Text className="font-semibold text-red-500">${totalExpenses}</Text>
+          </Text>
+          <Text className="text-lg">
+            Savings: <Text className={`font-semibold ${color}`}>${savings}</Text>
+          </Text>
+        </CardContent>
+      </Card>
+      <Button className="flex-row gap-1" onPress={onPressNewEntry}>
+        <MaterialIcons name="add-circle-outline" size={20} color="white" />
+        <Text className="text-white font-semibold">New Entry</Text>
+      </Button>
+    </View>
   );
 }

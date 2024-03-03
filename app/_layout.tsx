@@ -8,6 +8,7 @@ import * as SQLite from 'expo-sqlite/next';
 import { StatusBar } from 'expo-status-bar';
 import * as React from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { NAV_THEME } from '~/lib/constants';
 import { useColorScheme } from '~/lib/useColorScheme';
@@ -34,21 +35,6 @@ const loadDatabase = async () => {
     });
     await FileSystem.downloadAsync(dbUri, dbFilePath);
   }
-  const db = await SQLite.openDatabaseAsync(dbName);
-  await db.execAsync(`CREATE TABLE IF NOT EXISTS Categories (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('Expense', 'Income'))
-);`);
-  await db.execAsync(`CREATE TABLE IF NOT EXISTS Transactions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  category_id INTEGER,
-  amount REAL NOT NULL,
-  date INTEGER NOT NULL,
-  description TEXT,
-  type TEXT NOT NULL CHECK (type IN ('Expense', 'Income')),
-  FOREIGN KEY (category_id) REFERENCES Categories (id)
- );`);
 };
 
 // Prevent the splash screen from auto-hiding before getting the color scheme.
@@ -101,12 +87,14 @@ export default function Layout() {
         }>
         <SQLite.SQLiteProvider databaseName="mySQLiteDB.db" useSuspense>
           <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
-          <Stack>
-            <Stack.Screen
-              name="index"
-              options={{ headerTitle: 'Budget App', headerLargeTitle: true }}
-            />
-          </Stack>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack>
+              <Stack.Screen
+                name="index"
+                options={{ headerTitle: 'Budget App', headerLargeTitle: true }}
+              />
+            </Stack>
+          </GestureHandlerRootView>
         </SQLite.SQLiteProvider>
       </React.Suspense>
     </ThemeProvider>
