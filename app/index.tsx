@@ -8,7 +8,7 @@ import { BottomSheetCalendar } from '../components/NewTransactionBottomSheet';
 import TransactionsList from '../components/TransactionsList';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Category, Transaction, TransactionsByMonth } from '../lib/types';
+import { Category, Transaction, TransactionWithoutId, TransactionsByMonth } from '../lib/types';
 
 export default function Page() {
   const [categories, setCategories] = React.useState<Category[]>([]);
@@ -63,7 +63,7 @@ export default function Page() {
     });
   }
 
-  async function insertTransaction(transaction: Transaction) {
+  async function insertTransaction(transaction: TransactionWithoutId) {
     db.withTransactionAsync(async () => {
       const res = await db.runAsync(
         `

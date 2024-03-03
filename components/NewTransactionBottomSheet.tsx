@@ -9,14 +9,14 @@ import { NativeSyntheticEvent, Text, View } from 'react-native';
 
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Category, Transaction } from '../lib/types';
+import { Category, TransactionWithoutId } from '../lib/types';
 
 let didInit = false;
 
 export const BottomSheetCalendar = forwardRef<
   BottomSheet,
   Partial<BottomSheetProps> & {
-    insertTransaction: (transaction: Transaction) => Promise<void>;
+    insertTransaction: (transaction: TransactionWithoutId) => Promise<void>;
   }
 >(function BottomSheetCalendar(props, ref) {
   const snapPoints = useMemo(() => ['80%'], []);
@@ -65,7 +65,6 @@ export const BottomSheetCalendar = forwardRef<
     );
 
     await props.insertTransaction({
-      id: 10000,
       amount: Number(amount),
       description,
       category_id: categoryId,

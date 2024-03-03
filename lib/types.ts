@@ -7,6 +7,8 @@ export interface Transaction {
   type: 'Expense' | 'Income';
 }
 
+export type TransactionWithoutId = Omit<Transaction, 'id'>;
+
 export interface Category {
   id: number;
   name: string;
