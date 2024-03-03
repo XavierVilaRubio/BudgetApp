@@ -23,16 +23,15 @@ export const BottomSheetCalendar = forwardRef<
 
   const [currentTab, setCurrentTab] = React.useState<number>(0);
   const [categories, setCategories] = React.useState<Category[]>([]);
-  const [typeSelected, setTypeSelected] = React.useState<string>('');
+  const [typeSelected, setTypeSelected] = React.useState<Category['type']>('Expense');
   const [amount, setAmount] = React.useState<string>('');
   const [description, setDescription] = React.useState<string>('');
-  const [category, setCategory] = React.useState<string>('Expense');
   const [categoryId, setCategoryId] = React.useState<number>(1);
   const db = useSQLiteContext();
 
   async function getExpenseType(currentTab: number) {
-    setCategory(currentTab === 0 ? 'Expense' : 'Income');
     const type = currentTab === 0 ? 'Expense' : 'Income';
+    setTypeSelected(type);
 
     const result = await db.getAllAsync<Category>(`SELECT * FROM Categories WHERE type = ?;`, [
       type,
@@ -43,9 +42,8 @@ export const BottomSheetCalendar = forwardRef<
   function resetForm() {
     setAmount('');
     setDescription('');
-    setCategory('Expense');
     setCategoryId(1);
-    setTypeSelected('');
+    setTypeSelected('Expense');
     setCurrentTab(0);
   }
 
@@ -57,7 +55,7 @@ export const BottomSheetCalendar = forwardRef<
           description,
           category_id: categoryId,
           date: new Date().getTime() / 1000,
-          type: category as 'Expense' | 'Income',
+          type: typeSelected,
         },
         null,
         2
@@ -69,7 +67,7 @@ export const BottomSheetCalendar = forwardRef<
       description,
       category_id: categoryId,
       date: new Date().getTime() / 1000,
-      type: category as 'Expense' | 'Income',
+      type: typeSelected,
     });
     resetForm();
     if (props.onClose) props.onClose();
@@ -127,15 +125,12 @@ export const BottomSheetCalendar = forwardRef<
         <BottomSheetScrollView style={{ flex: 1 }} className="-mx-6 px-6">
           <FlashList
             data={categories}
-            extraData={typeSelected}
+            extraData={categoryId}
             renderItem={({ item }) => {
-              const isSelected = typeSelected === item.name;
+              const isSelected = categoryId === item.id;
               return (
                 <Button
-                  onPress={() => {
-                    setTypeSelected(item.name);
-                    setCategoryId(item.id);
-                  }}
+                  onPress={() => setCategoryId(item.id)}
                   variant={isSelected ? 'secondary' : 'outline'}
                   className="mb-2">
                   <Text>{item.name}</Text>
