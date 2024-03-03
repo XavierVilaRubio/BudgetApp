@@ -1,13 +1,17 @@
 import BottomSheet, { BottomSheetProps, BottomSheetScrollView } from '@gorhom/bottom-sheet';
-import SegmentedControl from '@react-native-segmented-control/segmented-control';
+import SegmentedControl, {
+  NativeSegmentedControlIOSChangeEvent,
+} from '@react-native-segmented-control/segmented-control';
 import { FlashList } from '@shopify/flash-list';
 import { useSQLiteContext } from 'expo-sqlite/next';
 import React, { forwardRef, useMemo } from 'react';
-import { Text, View } from 'react-native';
+import { NativeSyntheticEvent, Text, View } from 'react-native';
 
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Category, Transaction } from '../lib/types';
+
+let didInit = false;
 
 export const BottomSheetCalendar = forwardRef<
   BottomSheet,
@@ -26,10 +30,6 @@ export const BottomSheetCalendar = forwardRef<
   const [categoryId, setCategoryId] = React.useState<number>(1);
   const db = useSQLiteContext();
 
-  React.useEffect(() => {
-    getExpenseType(currentTab);
-  }, [currentTab]);
-
   async function getExpenseType(currentTab: number) {
     setCategory(currentTab === 0 ? 'Expense' : 'Income');
     const type = currentTab === 0 ? 'Expense' : 'Income';
@@ -45,6 +45,7 @@ export const BottomSheetCalendar = forwardRef<
     setDescription('');
     setCategory('Expense');
     setCategoryId(1);
+    setTypeSelected('');
     setCurrentTab(0);
   }
 
@@ -73,6 +74,17 @@ export const BottomSheetCalendar = forwardRef<
     });
     resetForm();
     if (props.onClose) props.onClose();
+  }
+
+  function onChangeExpenseTab(event: NativeSyntheticEvent<NativeSegmentedControlIOSChangeEvent>) {
+    const currentTab = event.nativeEvent.selectedSegmentIndex;
+    setCurrentTab(currentTab);
+    getExpenseType(currentTab);
+  }
+
+  if (!didInit) {
+    didInit = true;
+    getExpenseType(currentTab);
   }
 
   return (
@@ -111,9 +123,7 @@ export const BottomSheetCalendar = forwardRef<
           values={['Expense', 'Income']}
           style={{ marginBottom: 15 }}
           selectedIndex={currentTab}
-          onChange={(event) => {
-            setCurrentTab(event.nativeEvent.selectedSegmentIndex);
-          }}
+          onChange={onChangeExpenseTab}
         />
         <BottomSheetScrollView style={{ flex: 1 }} className="-mx-6 px-6">
           <FlashList
