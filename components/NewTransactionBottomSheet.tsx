@@ -1,4 +1,8 @@
-import BottomSheet, { BottomSheetProps, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetProps,
+  BottomSheetScrollView,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import SegmentedControl, {
   NativeSegmentedControlIOSChangeEvent,
 } from '@react-native-segmented-control/segmented-control';
@@ -23,15 +27,19 @@ export const BottomSheetCalendar = forwardRef<
 
   const [currentTab, setCurrentTab] = React.useState<number>(0);
   const [categories, setCategories] = React.useState<Category[]>([]);
-  const [typeSelected, setTypeSelected] = React.useState<Category['type']>('Expense');
-  const [amount, setAmount] = React.useState<string>('');
-  const [description, setDescription] = React.useState<string>('');
-  const [categoryId, setCategoryId] = React.useState<number>(1);
+
+  const [form, setForm] = React.useState<TransactionWithoutId>({
+    amount: 0,
+    description: '',
+    category_id: 1,
+    date: new Date().getTime() / 1000,
+    type: 'Expense',
+  });
   const db = useSQLiteContext();
 
   async function getExpenseType(currentTab: number) {
     const type = currentTab === 0 ? 'Expense' : 'Income';
-    setTypeSelected(type);
+    setForm((prev) => ({ ...prev, type }));
 
     const result = await db.getAllAsync<Category>(`SELECT * FROM Categories WHERE type = ?;`, [
       type,
@@ -40,35 +48,20 @@ export const BottomSheetCalendar = forwardRef<
   }
 
   function resetForm() {
-    setAmount('');
-    setDescription('');
-    setCategoryId(1);
-    setTypeSelected('Expense');
+    setForm((prev) => ({
+      ...prev,
+      amount: 0,
+      description: '',
+      category_id: 1,
+      type: 'Expense',
+    }));
     setCurrentTab(0);
   }
 
   async function handleSave() {
-    console.log(
-      JSON.stringify(
-        {
-          amount: Number(amount),
-          description,
-          category_id: categoryId,
-          date: new Date().getTime() / 1000,
-          type: typeSelected,
-        },
-        null,
-        2
-      )
-    );
+    console.log(JSON.stringify(form, null, 2));
 
-    await props.insertTransaction({
-      amount: Number(amount),
-      description,
-      category_id: categoryId,
-      date: new Date().getTime() / 1000,
-      type: typeSelected,
-    });
+    await props.insertTransaction(form);
     resetForm();
     if (props.onClose) props.onClose();
   }
@@ -96,11 +89,8 @@ export const BottomSheetCalendar = forwardRef<
         shadowRadius: 10,
         elevation: 10,
       }}
-      {...props}
-      onClose={() => {
-        resetForm();
-        if (props.onClose) props.onClose();
-      }}>
+      onClose={() => resetForm()}
+      {...props}>
       <View style={{ flex: 1 }} className="mx-6 gap-2 pb-6">
         <Text className="text-3xl font-bold">New Transaction</Text>
         <Input
@@ -108,14 +98,18 @@ export const BottomSheetCalendar = forwardRef<
           style={{ fontSize: 24, fontWeight: 'bold' }}
           className="text-3xl font-bold"
           keyboardType="numeric"
-          value={amount}
+          value={form.amount === 0 ? '' : form.amount.toString()}
           onChangeText={(text) => {
             // Remove any non-numeric characters before setting the state
             const numericValue = text.replace(/[^0-9.]/g, '');
-            setAmount(numericValue);
+            setForm((prev) => ({ ...prev, amount: Number(numericValue) }));
           }}
         />
-        <Input placeholder="Description" value={description} onChangeText={setDescription} />
+        <Input
+          placeholder="Description"
+          value={form.description}
+          onChangeText={(description) => setForm((prev) => ({ ...prev, description }))}
+        />
         <SegmentedControl
           values={['Expense', 'Income']}
           style={{ marginBottom: 15 }}
@@ -125,12 +119,12 @@ export const BottomSheetCalendar = forwardRef<
         <BottomSheetScrollView style={{ flex: 1 }} className="-mx-6 px-6">
           <FlashList
             data={categories}
-            extraData={categoryId}
+            extraData={form.category_id}
             renderItem={({ item }) => {
-              const isSelected = categoryId === item.id;
+              const isSelected = form.category_id === item.id;
               return (
                 <Button
-                  onPress={() => setCategoryId(item.id)}
+                  onPress={() => setForm((prev) => ({ ...prev, category_id: item.id }))}
                   variant={isSelected ? 'secondary' : 'outline'}
                   className="mb-2">
                   <Text>{item.name}</Text>
