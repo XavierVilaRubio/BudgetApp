@@ -83,17 +83,6 @@ export default function Page() {
   }
 
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const [isOpen, setIsOpen] = useState(false);
-  const handleSnapPress = useCallback((index: number) => {
-    console.log(bottomSheetRef);
-    bottomSheetRef.current?.snapToIndex(index);
-    setIsOpen(true);
-  }, []);
-
-  function onCloseBottomSheet() {
-    setIsOpen(false);
-    bottomSheetRef.current?.close();
-  }
 
   return (
     <SafeAreaView className="flex-1 bg-slate-50">
@@ -105,13 +94,13 @@ export default function Page() {
           <MonthSummaryCard
             totalExpenses={transactionsByMonth.totalExpenses}
             totalIncome={transactionsByMonth.totalIncome}
-            onPressNewEntry={() => handleSnapPress(0)}
+            onPressNewEntry={() => bottomSheetRef.current?.expand()}
           />
         }
       />
       <BottomSheetCalendar
         ref={bottomSheetRef}
-        onClose={onCloseBottomSheet}
+        onClose={() => bottomSheetRef.current?.close()}
         insertTransaction={insertTransaction}
       />
     </SafeAreaView>
