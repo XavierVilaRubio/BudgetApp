@@ -98,11 +98,7 @@ export default function Page() {
           />
         }
       />
-      <BottomSheetCalendar
-        ref={bottomSheetRef}
-        onClose={() => bottomSheetRef.current?.close()}
-        insertTransaction={insertTransaction}
-      />
+      <BottomSheetCalendar ref={bottomSheetRef} insertTransaction={insertTransaction} />
     </SafeAreaView>
   );
 }
